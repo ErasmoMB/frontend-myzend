@@ -1,5 +1,5 @@
 import type {Metadata} from 'next';
-import { Geist, Geist_Mono } from 'next/font/google'; // Corrected import from next/font/google
+import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
@@ -14,8 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'MindFlow',
-  description: 'Improve your mental well-being with AI-powered video recommendations.',
+  title: 'myzend',
+  description: 'Plataforma de bienestar y videos recomendados por IA.',
+  icons: {
+    icon: '/favicon.ico', 
+  },
 };
 
 export default function RootLayout({
@@ -24,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased flex flex-col min-h-screen`}>
         {children}
         <Toaster />

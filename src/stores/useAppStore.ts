@@ -41,7 +41,7 @@ export const useAppStore = create<AppState>()(
       setError: (error) => set({ error: error, isLoading: false }),
     }),
     {
-      name: 'mindflow-storage', // name of the item in the storage (must be unique)
+      name: 'myzend-storage', // name of the item in the storage (must be unique)
       storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
       partialize: (state) => ({ // persist only these parts of the state
           currentUser: state.currentUser,

@@ -1,4 +1,4 @@
-# **App Name**: MindFlow
+# **App Name**: myzend
 
 ## Core Features:
 

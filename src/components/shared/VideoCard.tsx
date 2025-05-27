@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -76,19 +75,19 @@ export function VideoCard({ video, isPlaying }: VideoCardProps) {
 
       {/* Content Overlay: Bottom Left */}
       <div className="absolute bottom-16 md:bottom-4 left-4 right-4 text-white z-10 p-4 space-y-2">
-        <h3 className="font-semibold text-lg drop-shadow-md">@MindFlowUser</h3>
+        <h3 className="font-semibold text-lg drop-shadow-md">@myzendUser</h3>
         <p className="text-sm line-clamp-2 drop-shadow-sm">{video.description}</p>
         <div className="flex items-center space-x-2 text-xs drop-shadow-sm">
           <Send size={16} className="transform rotate-[-45deg]" />
-          <span>Sonido Original - MindFlow</span>
+          <span>Sonido Original - myzend</span>
         </div>
       </div>
 
       {/* Action Buttons Overlay: Right Side */}
       <div className="absolute right-2 md:right-4 top-1/2 transform -translate-y-1/2 flex flex-col space-y-5 z-10 p-2">
-        {/* Mock User Avatar for video uploader - TikTok style */}
+        {/* Logo myzend como avatar */}
         <div className="relative flex flex-col items-center group">
-           <Image src="https://placehold.co/48x48/E3F2FD/212121.png?text=U" alt="User avatar" width={48} height={48} className="rounded-full border-2 border-white shadow-md" data-ai-hint="avatar user"/>
+           <img src="/logo.jpg" alt="myzend avatar" width={48} height={48} className="rounded-full border-2 border-white shadow-md" />
            <Button variant="ghost" size="icon" className="absolute -bottom-2.5 w-6 h-6 bg-primary text-primary-foreground rounded-full p-0.5 flex items-center justify-center shadow-md hover:bg-primary/90">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
            </Button>

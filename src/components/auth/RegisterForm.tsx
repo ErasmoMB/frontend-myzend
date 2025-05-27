@@ -47,7 +47,7 @@ export function RegisterForm() {
     loginUser({ id: '2', name: data.name, email: data.email, avatarUrl: 'https://placehold.co/100x100.png' });
     toast({
       title: 'Cuenta creada exitosamente',
-      description: 'Bienvenido a MindFlow!',
+      description: 'Bienvenido a myzend!',
     });
     router.push('/home');
     setIsLoading(false);
@@ -56,7 +56,11 @@ export function RegisterForm() {
   return (
     <Card className="w-full max-w-md shadow-xl">
       <CardHeader>
-        <CardTitle className="text-2xl">Crea tu cuenta en MindFlow</CardTitle>
+        {/* Logo myzend arriba del título */}
+        <div className="flex flex-col items-center mb-2">
+          <img src="/logo.jpg" alt="myzend logo" width={80} height={80} className="rounded-full mb-2 shadow-md" />
+        </div>
+        <CardTitle className="text-2xl">Crea tu cuenta en myzend</CardTitle>
         <CardDescription>Únete para mejorar tu bienestar emocional.</CardDescription>
       </CardHeader>
       <CardContent>
