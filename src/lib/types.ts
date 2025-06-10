@@ -25,6 +25,12 @@ export interface UserInteraction {
   videoId: string;
   interactionType: 'like' | 'save' | 'report';
   timestamp: Date;
+  // NUEVO: metadatos del video
+  videoUrl?: string;
+  videoTitle?: string;
+  videoThumbnail?: string;
+  // NUEVO: emoción asociada
+  emotion?: Emotion;
 }
 
 export interface UserProfile extends User {

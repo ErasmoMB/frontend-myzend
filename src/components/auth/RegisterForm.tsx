@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { useAppStore } from '@/stores/useAppStore';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { registerUser as apiRegisterUser } from '@/lib/api';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres.'),
@@ -40,16 +41,33 @@ export function RegisterForm() {
 
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
-    // Mock registration
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Simulate successful registration and login
-    loginUser({ id: '2', name: data.name, email: data.email, avatarUrl: 'https://placehold.co/100x100.png' });
-    toast({
-      title: 'Cuenta creada exitosamente',
-      description: 'Bienvenido a myzend!',
-    });
-    router.push('/home');
+    try {
+      console.log('Enviando registro:', data);
+      const res = await apiRegisterUser(data);
+      if (!res.ok) {
+        toast({
+          title: 'Error al registrar',
+          description: (res.body && res.body.detail) || 'No se pudo crear la cuenta.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+      // Registro exitoso, loguear automáticamente
+      loginUser({ id: data.email, name: data.name, email: data.email, avatarUrl: 'https://placehold.co/100x100.png' });
+      toast({
+        title: 'Cuenta creada exitosamente',
+        description: 'Bienvenido a myzend!',
+      });
+      router.push('/home');
+    } catch (err) {
+      console.log('Error en fetch registro:', err);
+      toast({
+        title: 'Error de red',
+        description: 'No se pudo conectar con el servidor.',
+        variant: 'destructive',
+      });
+    }
     setIsLoading(false);
   };
 

@@ -14,6 +14,7 @@ import Link from 'next/link';
 import { useAppStore } from '@/stores/useAppStore';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { loginUser as apiLoginUser } from '@/lib/api';
 
 const loginSchema = z.object({
   email: z.string().email('Correo electrónico inválido.'),
@@ -36,22 +37,35 @@ export function LoginForm() {
     },
   });
 
+  console.log('Componente LoginForm renderizado');
+
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
-    // Mock login
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    if (data.email === 'example@gmail.com' && data.password === 'password') {
-      loginUser({ id: '1', name: 'Usuario de Prueba', email: data.email, avatarUrl: 'https://placehold.co/100x100.png' });
+    console.log('Submit ejecutado. Email:', data.email, 'Password:', data.password);
+    try {
+      const res = await apiLoginUser(data);
+      if (!res.ok) {
+        toast({
+          title: 'Error de inicio de sesión',
+          description: (res.body && res.body.detail) || 'Correo electrónico o contraseña incorrectos.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
+      const result = res.body;
+      console.log('Login exitoso, usuario:', result);
+      loginUser({ id: result.user.email, name: result.user.name, email: result.user.email, avatarUrl: 'https://placehold.co/100x100.png' });
       toast({
         title: 'Inicio de sesión exitoso',
         description: 'Bienvenido de nuevo!',
       });
       router.push('/home');
-    } else {
+    } catch (err) {
+      console.log('Error en login:', err);
       toast({
-        title: 'Error de inicio de sesión',
-        description: 'Correo electrónico o contraseña incorrectos.',
+        title: 'Error de red',
+        description: 'No se pudo conectar con el servidor.',
         variant: 'destructive',
       });
     }
@@ -66,7 +80,13 @@ export function LoginForm() {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            onSubmit={(e) => {
+              console.log('Evento onSubmit del formulario disparado');
+              form.handleSubmit(onSubmit)(e);
+            }}
+            className="space-y-6"
+          >
             <FormField
               control={form.control}
               name="email"
@@ -93,7 +113,11 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading}
+            >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Iniciar sesión
             </Button>

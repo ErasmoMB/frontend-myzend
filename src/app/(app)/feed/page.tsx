@@ -7,19 +7,12 @@ import type { Video, Emotion } from '@/lib/types';
 import { recommendVideos as recommendVideosFlow } from '@/ai/flows/video-recommendation';
 import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-
-const mockVideos: Video[] = [
-  { id: '1', url: 'placeholder', description: 'Un relajante paseo por la naturaleza con música calmante.', thumbnailUrl: 'https://placehold.co/720x1280.png', dataAiHint: 'nature relaxation' },
-  { id: '2', url: 'placeholder', description: 'Ejercicios de respiración guiados para reducir la ansiedad.', thumbnailUrl: 'https://placehold.co/720x1280.png', dataAiHint: 'breathing exercise' },
-  { id: '3', url: 'placeholder', description: 'Momentos divertidos de animales para alegrar tu día.', thumbnailUrl: 'https://placehold.co/720x1280.png', dataAiHint: 'funny animals' },
-  { id: '4', url: 'placeholder', description: 'Consejos rápidos para mejorar la concentración y productividad.', thumbnailUrl: 'https://placehold.co/720x1280.png', dataAiHint: 'productivity tips' },
-  { id: '5', url: 'placeholder', description: 'Paisajes sonoros ASMR para un sueño profundo.', thumbnailUrl: 'https://placehold.co/720x1280.png', dataAiHint: 'asmr landscape' },
-];
 
 export default function FeedPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const selectedEmotion = useAppStore((state) => state.selectedEmotion);
   const userHistory = useAppStore((state) => state.userHistory);
@@ -29,6 +22,7 @@ export default function FeedPage() {
   const setLoading = useAppStore((state) => state.setLoading);
   const error = useAppStore((state) => state.error);
   const setError = useAppStore((state) => state.setError);
+  const savedVideos = useAppStore((state) => state.savedVideos);
 
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const videoRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -51,22 +45,20 @@ export default function FeedPage() {
         thumbnailUrl: `https://placehold.co/720x1280.png`,
         dataAiHint: 'abstract relax'
       }));
-      
-      const finalVideos = recommendedVideos.length > 0 ? recommendedVideos : mockVideos.slice(0,3);
-      setVideoRecommendations(finalVideos.slice(0, 5));
+      setVideoRecommendations(recommendedVideos.slice(0, 5));
       setCurrentVideoIndex(0); // Reset to first video on new recommendations
-      videoRefs.current = finalVideos.slice(0, 5).map(_ => null);
+      videoRefs.current = recommendedVideos.slice(0, 5).map(_ => null);
 
 
     } catch (err) {
       console.error('Error fetching recommendations:', err);
       setError('No se pudieron cargar las recomendaciones. Intenta de nuevo.');
-      setVideoRecommendations(mockVideos.slice(0,3));
+      setVideoRecommendations([]);
       setCurrentVideoIndex(0);
-      videoRefs.current = mockVideos.slice(0, 3).map(_ => null);
+      videoRefs.current = [];
       toast({
         title: 'Error de Recomendación',
-        description: 'Usando videos de muestra. Por favor, intenta recargar.',
+        description: 'No se pudieron cargar videos. Por favor, intenta recargar.',
         variant: 'destructive'
       });
     }
@@ -127,6 +119,30 @@ export default function FeedPage() {
       nextEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  // Mostrar videos guardados en el feed si existen
+  useEffect(() => {
+    const videoIdParam = searchParams.get('videoId');
+    if (videoIdParam && savedVideos.length > 0) {
+      // Si el videoId está en los guardados, mostrar solo ese
+      const saved = savedVideos.find(v => v.id === videoIdParam);
+      if (saved) {
+        setVideoRecommendations([saved]);
+        setCurrentVideoIndex(0);
+        return;
+      }
+    }
+  }, [searchParams, savedVideos]);
+
+  useEffect(() => {
+    // Si hay un videoId en la URL, mostrar ese video primero
+    const videoIdParam = searchParams.get('videoId');
+    if (videoIdParam && currentVideoRecommendations.length > 0) {
+      const idx = currentVideoRecommendations.findIndex(v => v.id === videoIdParam);
+      if (idx !== -1) setCurrentVideoIndex(idx);
+    }
+    // eslint-disable-next-line
+  }, [searchParams, currentVideoRecommendations.length]);
 
   if (!selectedEmotion && !isLoading) { // Added !isLoading to prevent premature redirect
     return (

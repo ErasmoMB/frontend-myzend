@@ -38,13 +38,27 @@ export function VideoCard({ video, isPlaying, onVideoEnd }: VideoCardProps) {
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const hideSliderTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Determinar icono de volumen
-  let VolumeIcon = Volume2;
-  if (isMuted || volume === 0) VolumeIcon = VolumeX;
-  else if (volume < 50) VolumeIcon = Volume1;
+  // Estado para forzar el mute inicial solo una vez
+  const [hasSetInitialMute, setHasSetInitialMute] = useState(false);
 
-  // Mostrar slider al hacer clic y ocultar después de 2.5s sin interacción
+  // Solo forzar mute al montar el video, no al cambiar volumen
+  useEffect(() => {
+    if (isPlaying && !hasSetInitialMute) {
+      setIsMuted(true);
+      setVolume(100); // Volumen inicial alto pero silenciado
+      setHasSetInitialMute(true);
+    }
+    // eslint-disable-next-line
+  }, [isPlaying]);
+
+  // Al hacer click en el icono de sonido: activar sonido bajo
   const handleVolumeIconClick = () => {
+    if (isMuted) {
+      setIsMuted(false);
+      setVolume(20); // Sonido bajo al activar
+    } else {
+      setIsMuted(true);
+    }
     setShowVolumeSlider(true);
     if (hideSliderTimeout.current) clearTimeout(hideSliderTimeout.current);
     hideSliderTimeout.current = setTimeout(() => setShowVolumeSlider(false), 2500);
@@ -114,6 +128,9 @@ export function VideoCard({ video, isPlaying, onVideoEnd }: VideoCardProps) {
   const isSaved = savedVideos.some(v => v.id === video.id);
   const isDisliked = dislikedVideos.some(v => v.id === video.id);
 
+  // Determinar icono de volumen
+  const VolumeIcon = isMuted || volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2;
+
   return (
     <Card className="h-screen w-full snap-start flex flex-col shadow-none rounded-none bg-black relative overflow-hidden">
       {/* Botón de volumen en la esquina superior derecha */}
@@ -149,6 +166,7 @@ export function VideoCard({ video, isPlaying, onVideoEnd }: VideoCardProps) {
       )}
       {video.url.includes('youtube.com/shorts') && isPlaying ? (
         <iframe
+          key={video.id} // Solo reiniciar si cambia el video
           src={
             video.url.replace('/shorts/', '/embed/').split('?')[0] +
             `?autoplay=1&mute=${isMuted ? 1 : 0}&controls=0&modestbranding=1&rel=0&loop=0&enablejsapi=1`
@@ -163,8 +181,8 @@ export function VideoCard({ video, isPlaying, onVideoEnd }: VideoCardProps) {
         <Image
           src={video.thumbnailUrl}
           alt={video.description}
-          layout="fill"
-          objectFit="cover"
+          fill
+          style={{ objectFit: 'cover' }}
           className={cn("transition-opacity duration-300", isPlaying ? "opacity-100" : "opacity-80")}
           data-ai-hint={video.dataAiHint}
           priority
@@ -196,7 +214,21 @@ export function VideoCard({ video, isPlaying, onVideoEnd }: VideoCardProps) {
         <Button
           variant={isLiked ? 'default' : 'ghost'}
           size="icon"
-          onClick={() => isLiked ? removeLikedVideo(video.id) : addLikedVideo(video)}
+          onClick={() => {
+            if (!isLiked) {
+              addInteraction({
+                videoId: video.id,
+                interactionType: 'like',
+                timestamp: new Date(),
+                videoUrl: video.url,
+                videoTitle: video.description,
+                videoThumbnail: video.thumbnailUrl,
+                emotion: selectedEmotion || undefined,
+              });
+            } else {
+              removeLikedVideo(video.id);
+            }
+          }}
           className={cn("text-white hover:text-rose-500 rounded-full h-12 w-12 p-0 drop-shadow-lg transition-transform hover:scale-110", isLiked ? "text-rose-500 fill-rose-500" : "")}
           aria-label="Me gusta"
         >
@@ -205,7 +237,21 @@ export function VideoCard({ video, isPlaying, onVideoEnd }: VideoCardProps) {
         <Button
           variant={isSaved ? 'default' : 'ghost'}
           size="icon"
-          onClick={() => isSaved ? removeSavedVideo(video.id) : addSavedVideo(video)}
+          onClick={() => {
+            if (!isSaved) {
+              addInteraction({
+                videoId: video.id,
+                interactionType: 'save',
+                timestamp: new Date(),
+                videoUrl: video.url,
+                videoTitle: video.description,
+                videoThumbnail: video.thumbnailUrl,
+                emotion: selectedEmotion || undefined,
+              });
+            } else {
+              removeSavedVideo(video.id);
+            }
+          }}
           className={cn("text-white hover:text-yellow-400 rounded-full h-12 w-12 p-0 drop-shadow-lg transition-transform hover:scale-110", isSaved ? "text-yellow-400 fill-yellow-400" : "")}
           aria-label="Guardar"
         >

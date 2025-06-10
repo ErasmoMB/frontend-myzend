@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { Meh, Frown, Angry, ThumbsDown, UserX, AlertTriangle, Edit3, LogOut, History, Star } from 'lucide-react';
 import type { Emotion } from '@/lib/types';
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 const emotionIcons: Record<Emotion, React.ElementType> = {
   'Deprimido/a': Meh,
@@ -28,6 +29,15 @@ export default function ProfilePage() {
   const savedVideos = useAppStore((state) => state.savedVideos);
   const dislikedVideos = useAppStore((state) => state.dislikedVideos);
   const selectedEmotion = useAppStore((state) => state.selectedEmotion);
+  const fetchUserHistory = useAppStore((state) => state.fetchUserHistory);
+  const emotionHistory = useAppStore((state) => state.emotionHistory);
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchUserHistory();
+      useAppStore.getState().fetchEmotionHistory();
+    }
+  }, [currentUser, fetchUserHistory]);
 
   if (!currentUser) {
     // This should ideally be handled by the AppLayout, but as a fallback:
@@ -43,10 +53,6 @@ export default function ProfilePage() {
   // Historial real de emociones seleccionadas
   // (en una app real, deberías guardar cada selección de emoción con timestamp)
   // Aquí simulamos con la última emoción seleccionada
-  const emotionHistory = selectedEmotion
-    ? [{ emotion: selectedEmotion, timestamp: new Date() }]
-    : [];
-
   const savedVideosCount = likedVideos.length;
 
   return (
@@ -79,26 +85,28 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent>
             {emotionHistory.length > 0 ? (
-              <ul className="space-y-3">
-                {emotionHistory.map((entry, index) => {
-                  const IconComponent = emotionIcons[entry.emotion];
-                  return (
-                    <li key={index} className="flex items-center justify-between p-3 bg-secondary/30 rounded-md">
-                      <div className="flex items-center">
-                        <IconComponent className="w-6 h-6 mr-3 text-accent" />
-                        <span className="font-medium">{entry.emotion}</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(entry.timestamp).toLocaleDateString()}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="max-h-64 overflow-y-auto pr-2">
+                <ul className="space-y-3">
+                  {emotionHistory.map((entry, index) => {
+                    const IconComponent = emotionIcons[entry.emotion as Emotion];
+                    return (
+                      <li key={index} className="flex items-center justify-between p-3 bg-secondary/30 rounded-md">
+                        <div className="flex items-center">
+                          {IconComponent && <IconComponent className="w-6 h-6 mr-3 text-accent" />}
+                          <span className="font-medium">{entry.emotion}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(entry.timestamp).toLocaleString()}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             ) : (
               <p className="text-muted-foreground text-center py-4">No hay historial de emociones disponible.</p>
             )}
-             <Button onClick={() => router.push('/home')} className="w-full mt-6">
+            <Button onClick={() => router.push('/home')} className="w-full mt-6">
               Cambiar emoción actual
             </Button>
           </CardContent>

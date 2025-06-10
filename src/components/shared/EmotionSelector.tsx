@@ -57,7 +57,8 @@ export function EmotionSelector() {
       setLoading(true);
       setShorts([]);
       try {
-        const backendUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/youtube/shorts`;
+        // Usar la IP correcta del backend
+        const backendUrl = `http://127.0.0.1:8000/youtube/shorts`;
         // Solicitar shorts de todos los canales en paralelo
         const responses = await Promise.all(
           channels.map(channel_handle =>
